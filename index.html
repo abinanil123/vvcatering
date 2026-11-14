@@ -1,0 +1,915 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>V.V Events & Catering Service — Neyyattinkara</title>
+  
+  <!-- PWA & iOS Meta Tags -->
+  <link rel="manifest" href="./manifest.json">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="VV Catering">
+  <link rel="apple-touch-icon" href="./vv-logo.png">
+  <meta name="theme-color" content="#000000">
+
+  <!-- Tailwind CSS & Lucide Icons -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+  
+  <style>
+    :root {
+      --bg-oled: #000000;
+      --card-elevated: #1C1C1E;
+      --card-interactive: #2C2C2E;
+      --border-subtle: #38383A;
+      --accent-vv: #E53935;
+      --accent-gold: #F59E0B;
+      --text-primary: #F5F5F7;
+      --text-secondary: #8E8E93;
+    }
+    body {
+      background-color: var(--bg-oled);
+      color: var(--text-primary);
+      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      padding-top: env(safe-area-inset-top, 0px);
+      padding-bottom: env(safe-area-inset-bottom, 16px);
+      -webkit-tap-highlight-color: transparent;
+      user-select: none;
+    }
+    .hidden { display: none !important; }
+    input, textarea, select { user-select: text; font-size: 16px; } /* Prevents iOS auto-zoom */
+    
+    .no-scrollbar::-webkit-scrollbar { display: none; }
+    .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+    
+    /* Apple Inset Grouped Design & Blur */
+    .apple-nav {
+      background: rgba(0, 0, 0, 0.85);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+    }
+    .apple-card {
+      background: #1C1C1E;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    /* Calendar Day Cell Styling */
+    .cal-day {
+      aspect-ratio: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      border-radius: 0.75rem;
+      cursor: pointer;
+      position: relative;
+      transition: all 0.15s ease;
+    }
+    .cal-day:active { transform: scale(0.92); }
+    .cal-day.selected {
+      background-color: var(--accent-vv) !important;
+      color: #FFFFFF !important;
+      font-weight: bold;
+    }
+    .cal-day.today { border: 1.5px solid var(--accent-vv); }
+    .cal-day.other-month { opacity: 0.25; }
+
+    /* Malayalam Font Rendering Line-Height */
+    .ml-text { line-height: 1.625; }
+
+    /* Netlify Overlay Badge Suppression */
+    iframe[src*="netlify"],
+    .netlify-badge,
+    [class*="netlify"],
+    [id*="netlify"],
+    a[href*="netlify.com"],
+    div[style*="z-index: 2147483647"],
+    div[style*="z-index: 9999999"] {
+      display: none !important;
+      visibility: hidden !important;
+      opacity: 0 !important;
+      pointer-events: none !important;
+    }
+  </style>
+</head>
+<body class="bg-black text-[#F5F5F7] min-h-screen flex flex-col font-sans antialiased selection:bg-[#E53935] selection:text-white">
+
+  <!-- Top App Bar with V.V Branding & Neyyattinkara Location -->
+  <header class="sticky top-0 z-30 apple-nav border-b border-[#2C2C2E] px-4 py-3 flex items-center justify-between">
+    <div class="flex items-center space-x-2.5">
+      <img src="./vv-logo.png" alt="V.V Logo" class="w-10 h-10 object-contain rounded-xl bg-black border border-[#38383A] p-0.5 shadow-md">
+      <div>
+        <h1 class="text-base font-bold leading-tight tracking-tight text-white flex items-center gap-1.5">
+          V.V Events & Catering
+          <span class="text-[10px] uppercase font-semibold px-1.5 py-0.5 rounded-full bg-[#E53935]/20 text-[#E53935] border border-[#E53935]/30">Pro</span>
+        </h1>
+        <div id="syncStatus" class="flex items-center gap-1.5 text-[11px] text-[#8E8E93] font-medium">
+          <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+          <span>Mamkoottam, Neyyattinkara • Ph: 8281857273</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="flex items-center gap-2">
+      <button onclick="openNewEventModal()" class="flex items-center gap-1.5 bg-[#E53935] hover:bg-[#D32F2F] active:scale-95 transition text-white text-xs font-bold px-3.5 py-2.5 rounded-xl shadow-lg shadow-[#E53935]/25">
+        <i data-lucide="plus" class="w-4 h-4"></i>
+        <span>New Event</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- Main View Container -->
+  <main class="flex-1 overflow-y-auto px-4 py-4 pb-24 max-w-2xl mx-auto w-full">
+    
+    <!-- Tab 1: Events & Clean Calendar View -->
+    <section id="tabEvents" class="space-y-4">
+
+      <!-- In-App Kitchen Ops Radar (T-48h Headcount Lock & T-24h Kitchen Prep) -->
+      <div id="kitchenOpsRadar" class="space-y-2"></div>
+
+      <!-- View Toggle: List vs Clean "Calendar" (No Samsung, No Slop) -->
+      <div class="flex items-center justify-between bg-[#1C1C1E] p-1.5 rounded-2xl border border-[#2C2C2E]">
+        <button id="viewToggleList" onclick="toggleCalendarView(false)" class="flex-1 py-2 px-3 rounded-xl text-xs font-bold transition bg-[#E53935] text-white shadow-sm flex items-center justify-center gap-1.5">
+          <span>📋</span> List
+        </button>
+        <button id="viewToggleCal" onclick="toggleCalendarView(true)" class="flex-1 py-2 px-3 rounded-xl text-xs font-bold transition text-[#8E8E93] hover:text-white flex items-center justify-center gap-1.5">
+          <span>📅</span> Calendar
+        </button>
+      </div>
+
+      <!-- Clean Apple-Style Calendar Card -->
+      <div id="interactiveCalendarCard" class="apple-card rounded-3xl p-4 border border-[#2C2C2E] space-y-3 hidden animate-in fade-in">
+        <!-- Calendar Header -->
+        <div class="flex items-center justify-between">
+          <div class="flex items-center gap-2">
+            <h2 id="calMonthYear" class="text-base font-bold text-white tracking-wide">November 2026</h2>
+            <button onclick="goToCurrentMonth()" class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-[#E53935]/20 text-[#E53935] border border-[#E53935]/30">
+              Today
+            </button>
+          </div>
+          <div class="flex items-center gap-1.5">
+            <button onclick="changeMonth(-1)" class="w-8 h-8 rounded-xl bg-[#2C2C2E] hover:bg-[#38383A] flex items-center justify-center text-white">
+              ‹
+            </button>
+            <button onclick="changeMonth(1)" class="w-8 h-8 rounded-xl bg-[#2C2C2E] hover:bg-[#38383A] flex items-center justify-center text-white">
+              ›
+            </button>
+          </div>
+        </div>
+
+        <!-- Day Names -->
+        <div class="grid grid-cols-7 gap-1 text-center text-[10px] font-bold text-[#8E8E93] uppercase tracking-wider py-1 border-b border-[#2C2C2E]">
+          <span>Sun</span>
+          <span>Mon</span>
+          <span>Tue</span>
+          <span>Wed</span>
+          <span>Thu</span>
+          <span>Fri</span>
+          <span>Sat</span>
+        </div>
+
+        <!-- Day Cells Grid (Supports Multi-Event Dots) -->
+        <div id="calendarDaysGrid" class="grid grid-cols-7 gap-1 text-xs">
+          <!-- Populated by JavaScript -->
+        </div>
+
+        <!-- Date Filter Indicator Bar -->
+        <div id="calDateFilterBar" class="hidden flex items-center justify-between bg-[#E53935]/10 border border-[#E53935]/30 px-3 py-1.5 rounded-xl text-[11px] text-[#F5F5F7]">
+          <span id="calSelectedDateText">Filtering: Nov 15</span>
+          <button onclick="clearCalendarDateFilter()" class="underline font-bold text-[#E53935] hover:text-white">
+            Show All Events
+          </button>
+        </div>
+      </div>
+
+      <!-- Search & Status Filters -->
+      <div class="space-y-2.5">
+        <div class="relative">
+          <i data-lucide="search" class="w-4 h-4 absolute left-3.5 top-3.5 text-[#8E8E93]"></i>
+          <input 
+            type="text" 
+            id="searchInput" 
+            oninput="renderEvents()"
+            placeholder="Search events, venues, clients or dishes..." 
+            class="w-full pl-10 pr-4 py-2.5 bg-[#1C1C1E] border border-[#2C2C2E] rounded-2xl text-sm placeholder-[#636366] focus:outline-none focus:border-[#E53935] transition text-white"
+          />
+        </div>
+
+        <!-- Filter Chips -->
+        <div class="flex gap-2 overflow-x-auto no-scrollbar py-1">
+          <button onclick="setFilter('all')" id="filter-all" class="filter-chip px-3.5 py-1.5 rounded-xl text-xs font-semibold bg-[#E53935] text-white transition">All Events</button>
+          <button onclick="setFilter('upcoming')" id="filter-upcoming" class="filter-chip px-3.5 py-1.5 rounded-xl text-xs font-semibold bg-[#1C1C1E] text-[#8E8E93] hover:text-white transition">Upcoming</button>
+          <button onclick="setFilter('this-week')" id="filter-this-week" class="filter-chip px-3.5 py-1.5 rounded-xl text-xs font-semibold bg-[#1C1C1E] text-[#8E8E93] hover:text-white transition">This Week</button>
+          <button onclick="setFilter('completed')" id="filter-completed" class="filter-chip px-3.5 py-1.5 rounded-xl text-xs font-semibold bg-[#1C1C1E] text-[#8E8E93] hover:text-white transition">Completed</button>
+        </div>
+      </div>
+
+      <!-- Quick Stats Card: Guests / Plates terminology -->
+      <div class="grid grid-cols-3 gap-2.5">
+        <div class="apple-card p-3 rounded-2xl text-center">
+          <span class="text-[11px] text-[#8E8E93] font-medium block">Total Events</span>
+          <span id="statTotal" class="text-xl font-bold text-white">0</span>
+        </div>
+        <div class="apple-card p-3 rounded-2xl text-center">
+          <span class="text-[11px] text-[#8E8E93] font-medium block">Upcoming</span>
+          <span id="statUpcoming" class="text-xl font-bold text-emerald-400">0</span>
+        </div>
+        <div class="apple-card p-3 rounded-2xl text-center">
+          <span class="text-[11px] text-[#8E8E93] font-medium block">Guests / Plates</span>
+          <span id="statGuests" class="text-xl font-bold text-[#E53935]">0</span>
+        </div>
+      </div>
+
+      <!-- Event Cards List -->
+      <div id="eventsList" class="space-y-3.5">
+        <!-- Rendered dynamically via JavaScript with Dual WhatsApp & Share buttons -->
+      </div>
+
+      <!-- Empty State -->
+      <div id="emptyState" class="hidden text-center py-12 px-4 space-y-4">
+        <div class="w-16 h-16 rounded-full bg-[#1C1C1E] border border-[#2C2C2E] flex items-center justify-center mx-auto text-3xl">
+          📋
+        </div>
+        <div>
+          <h3 class="text-base font-bold text-white">No catering events found</h3>
+          <p class="text-xs text-[#8E8E93] max-w-xs mx-auto mt-1">Tap below to add your first event or load Travancore Sadya demo data.</p>
+        </div>
+        <div class="flex justify-center gap-2 pt-2">
+          <button onclick="openNewEventModal()" class="bg-[#E53935] text-white text-xs font-bold px-4 py-2.5 rounded-xl shadow-md">Add New Event</button>
+          <button onclick="loadDemoData()" class="bg-[#2C2C2E] hover:bg-[#38383A] text-white text-xs font-semibold px-4 py-2.5 rounded-xl">Load Demo</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Tab 2: Master Menu & Dishes Bank (Travancore Sadya, Feasts & Achars) -->
+    <section id="tabDishes" class="space-y-4 hidden">
+      <div class="flex items-center justify-between">
+        <div>
+          <h2 class="text-base font-bold text-white">Master Menu & Sadya Dishes</h2>
+          <p class="text-xs text-[#8E8E93]">Traditional Travancore sadya, feasts & pickles.</p>
+        </div>
+        <button onclick="openAddDishModal()" class="bg-[#E53935] text-white text-xs font-bold px-3 py-2 rounded-xl flex items-center gap-1 shadow-md">
+          <i data-lucide="plus" class="w-3.5 h-3.5"></i> Add Dish
+        </button>
+      </div>
+
+      <!-- Quick Packages Pre-selector -->
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
+        <div class="apple-card p-3 rounded-2xl border border-[#2C2C2E]">
+          <span class="text-[10px] font-bold text-[#E53935] uppercase">👑 Royal Sadya</span>
+          <h4 class="text-xs font-bold text-white mt-0.5">28+ കൂട്ടം സദ്യ</h4>
+          <p class="text-[10px] text-[#8E8E93]">3 Achars, Ada Pradhaman, Boli & Pazham</p>
+        </div>
+        <div class="apple-card p-3 rounded-2xl border border-[#2C2C2E]">
+          <span class="text-[10px] font-bold text-amber-400 uppercase">🥈 Classic Sadya</span>
+          <h4 class="text-xs font-bold text-white mt-0.5">18 കൂട്ടം സദ്യ</h4>
+          <p class="text-[10px] text-[#8E8E93]">Double Achar, Sambar, Avial, Payasam</p>
+        </div>
+        <div class="apple-card p-3 rounded-2xl border border-[#2C2C2E]">
+          <span class="text-[10px] font-bold text-emerald-400 uppercase">🍗 Dum Biryani Feast</span>
+          <h4 class="text-xs font-bold text-white mt-0.5">Neyyattinkara Biryani</h4>
+          <p class="text-[10px] text-[#8E8E93]">Chicken/Mutton, Raita, Dates Achar</p>
+        </div>
+      </div>
+
+      <div id="masterDishContainer" class="space-y-3">
+        <!-- Grouped by category -->
+      </div>
+    </section>
+
+    <!-- Tab 3: Team Sync & Business Settings -->
+    <section id="tabSync" class="space-y-4 hidden">
+
+      <!-- Business Profile & Details -->
+      <div class="apple-card p-4 rounded-3xl space-y-3 border border-[#E53935]/30">
+        <div class="flex items-center gap-3">
+          <img src="./vv-logo.png" class="w-10 h-10 rounded-xl bg-black border border-[#38383A] p-0.5">
+          <div>
+            <h3 class="text-sm font-bold text-white">V.V Events & Catering Service</h3>
+            <p class="text-[11px] text-[#8E8E93]">Mamkoottam, Neyyattinkara | FSSAI: 11321001001393</p>
+          </div>
+        </div>
+        <div class="grid grid-cols-2 gap-2 text-xs pt-1">
+          <div class="bg-black/60 p-2.5 rounded-xl border border-[#2C2C2E]">
+            <span class="text-[10px] text-[#8E8E93] block">Primary Phone</span>
+            <span class="font-bold text-white">8281857273</span>
+          </div>
+          <div class="bg-black/60 p-2.5 rounded-xl border border-[#2C2C2E]">
+            <span class="text-[10px] text-[#8E8E93] block">Alternate Phones</span>
+            <span class="font-bold text-white">9072721633 / 0471</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Private Team Sync Code & Security Lock -->
+      <div class="apple-card p-4 rounded-3xl space-y-3.5 border border-[#38383A]">
+        <div class="flex items-center justify-between">
+          <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-2xl bg-[#E53935]/20 text-[#E53935] flex items-center justify-center text-xl font-bold">
+              🔑
+            </div>
+            <div>
+              <h3 class="text-sm font-bold text-white">Private Business Sync Code</h3>
+              <p class="text-[10px] text-[#8E8E93]">Pair devices for Uncle & Staff</p>
+            </div>
+          </div>
+          <span id="teamSyncStatusPill" class="text-[10px] px-2.5 py-0.5 rounded-full font-bold bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
+            🟢 Paired
+          </span>
+        </div>
+
+        <p class="text-xs text-[#8E8E93] leading-relaxed">
+          Only devices with this code can sync and view catering bookings. Keeps data private from competitors and unauthorized phones.
+        </p>
+
+        <!-- Active Sync Key Box -->
+        <div class="bg-black p-3.5 rounded-2xl border border-[#2C2C2E] space-y-2">
+          <span class="text-[10px] text-[#8E8E93] uppercase font-bold block">Current Business Code:</span>
+          <div class="flex items-center justify-between gap-2">
+            <span id="currentTeamCodeDisplay" class="font-mono text-base font-extrabold text-[#E53935] tracking-wider">
+              VV-695121
+            </span>
+            <button onclick="copyTeamSyncCode()" class="px-3 py-1.5 rounded-xl bg-[#2C2C2E] hover:bg-[#38383A] text-white text-xs font-semibold flex items-center gap-1 active:scale-95 transition">
+              <span>📋</span> Copy Code
+            </button>
+          </div>
+        </div>
+
+        <!-- Pair New Device Input -->
+        <div class="space-y-1.5 pt-1">
+          <label class="text-[11px] font-semibold text-white block">Pair Staff Phone (Enter Code):</label>
+          <div class="flex gap-2">
+            <input 
+              type="text" 
+              id="pairTeamCodeInput" 
+              placeholder="e.g. VV-695121" 
+              class="flex-1 p-2.5 bg-black border border-[#2C2C2E] rounded-xl text-xs font-mono uppercase text-white focus:border-[#E53935] focus:outline-none"
+            >
+            <button onclick="pairDeviceWithTeamCode()" class="px-4 py-2.5 bg-[#E53935] hover:bg-[#D32F2F] active:scale-95 text-white font-bold text-xs rounded-xl shadow-md transition">
+              Pair
+            </button>
+          </div>
+          <span id="pairCodeErrorMsg" class="text-[11px] text-rose-400 hidden block"></span>
+        </div>
+      </div>
+
+      <!-- Automated Ops & Alarm Toggles (T-3h Van, T-24h Kitchen, T+24h Review) -->
+      <div class="apple-card p-4 rounded-3xl space-y-3">
+        <div class="flex items-center gap-2.5">
+          <div class="w-10 h-10 rounded-2xl bg-amber-500/20 text-amber-400 flex items-center justify-center text-xl font-bold">
+            🔔
+          </div>
+          <div>
+            <h3 class="text-sm font-bold text-white">Operations & Alarm Triggers</h3>
+            <p class="text-[10px] text-[#8E8E93]">Native .ics calendar alarms & radar alerts</p>
+          </div>
+        </div>
+
+        <div class="space-y-2.5 pt-1">
+          <!-- Kitchen Prep Reminder -->
+          <div class="flex items-center justify-between p-2.5 bg-black rounded-2xl border border-[#2C2C2E]">
+            <div>
+              <span class="text-xs font-bold text-white block">🍲 Kitchen Prep (T-24h)</span>
+              <span class="text-[10px] text-[#8E8E93]">Alert 1 day before event for procurement</span>
+            </div>
+            <label class="relative inline-flex items-center cursor-pointer">
+              <input type="checkbox" id="notifKitchenPrep" checked onchange="saveNotifSettings()" class="sr-only peer">
+              <div class="w-9 h-5 bg-[#2C2C2E] peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-[#E53935]"></div>
+            </label>
+          </div>
+
+          <!-- Van Departure Alarm -->
+          <div class="flex items-center justify-between p-2.5 bg-black rounded-2xl border border-[#2C2C2E]">
+            <div>
+              <span class="text-xs font-bold text-white block">🚚 Van Departure (T-3h)</span>
+              <span class="text-[10px] text-[#8E8E93]">Alarm before food transport leaves kitchen</span>
+            </div>
+            <label class="relative inline-flex items-center cursor-pointer">
+              <input type="checkbox" id="notifVanDeparture" checked onchange="saveNotifSettings()" class="sr-only peer">
+              <div class="w-9 h-5 bg-[#2C2C2E] peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-[#E53935]"></div>
+            </label>
+          </div>
+
+          <!-- Google Review Follow-up -->
+          <div class="flex items-center justify-between p-2.5 bg-black rounded-2xl border border-[#2C2C2E]">
+            <div>
+              <span class="text-xs font-bold text-white block">⭐ Google Review (T+24h)</span>
+              <span class="text-[10px] text-[#8E8E93]">Prompts client feedback 1 day after event</span>
+            </div>
+            <label class="relative inline-flex items-center cursor-pointer">
+              <input type="checkbox" id="notifGoogleReview" checked onchange="saveNotifSettings()" class="sr-only peer">
+              <div class="w-9 h-5 bg-[#2C2C2E] peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-[#E53935]"></div>
+            </label>
+          </div>
+        </div>
+      </div>
+
+      <!-- Backup / Restore & Excel -->
+      <div class="apple-card p-4 rounded-3xl space-y-3">
+        <h3 class="text-sm font-bold text-white flex items-center gap-2">
+          <i data-lucide="shield-check" class="w-4 h-4 text-emerald-400"></i>
+          Offline Backup & Excel Export
+        </h3>
+        <p class="text-xs text-[#8E8E93]">Export events to Google Sheets / Excel or save a JSON backup to your phone.</p>
+        <div class="grid grid-cols-2 gap-2 pt-1">
+          <button onclick="exportToCSV()" class="flex items-center justify-center gap-1.5 py-2.5 bg-emerald-600/20 hover:bg-emerald-600/30 text-emerald-300 text-xs font-semibold rounded-xl border border-emerald-500/30 transition">
+            <i data-lucide="file-spreadsheet" class="w-3.5 h-3.5"></i> Export Excel
+          </button>
+          <button onclick="exportDataToFile()" class="flex items-center justify-center gap-1.5 py-2.5 bg-[#2C2C2E] hover:bg-[#38383A] text-white text-xs font-semibold rounded-xl border border-[#38383A] transition">
+            <i data-lucide="download" class="w-3.5 h-3.5"></i> Backup JSON
+          </button>
+        </div>
+        <div class="flex gap-2">
+          <label class="flex-1 flex items-center justify-center gap-1.5 py-2 bg-black hover:bg-[#1C1C1E] text-white text-xs font-semibold rounded-xl border border-[#2C2C2E] cursor-pointer transition">
+            <i data-lucide="upload" class="w-3.5 h-3.5"></i> Restore File
+            <input type="file" id="importFileInput" onchange="importDataFromFile(event)" accept=".json" class="hidden" />
+          </label>
+        </div>
+      </div>
+
+      <!-- How to Install PWA on iPhone -->
+      <div class="apple-card p-4 rounded-3xl space-y-2 border border-[#E53935]/30 bg-[#E53935]/5">
+        <h4 class="text-xs font-bold text-[#E53935] flex items-center gap-1.5">
+          📲 How to Install on iPhone / Android:
+        </h4>
+        <ol class="text-[11px] text-[#8E8E93] space-y-1 list-decimal list-inside pl-1">
+          <li>Open <strong>vvcatering.netlify.app</strong> in Safari or Chrome.</li>
+          <li>Tap the <strong>Share button</strong> on iPhone (or 3-dots on Android).</li>
+          <li>Tap <strong>"Add to Home Screen"</strong>. It installs with the V.V logo!</li>
+        </ol>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- iOS-Style Bottom Navigation Tab Bar (52px Touch Targets) -->
+  <nav class="fixed bottom-0 inset-x-0 apple-nav border-t border-[#2C2C2E] px-4 py-2 z-30">
+    <div class="max-w-md mx-auto grid grid-cols-3 gap-1">
+      <button onclick="switchTab('events')" id="nav-events" class="flex flex-col items-center py-1 text-[#E53935] transition">
+        <i data-lucide="calendar" class="w-5 h-5 mb-0.5"></i>
+        <span class="text-[10px] font-bold">Events</span>
+      </button>
+
+      <button onclick="switchTab('dishes')" id="nav-dishes" class="flex flex-col items-center py-1 text-[#8E8E93] hover:text-white transition">
+        <i data-lucide="utensils-crossed" class="w-5 h-5 mb-0.5"></i>
+        <span class="text-[10px] font-semibold">Menu Bank</span>
+      </button>
+
+      <button onclick="switchTab('sync')" id="nav-sync" class="flex flex-col items-center py-1 text-[#8E8E93] hover:text-white transition">
+        <i data-lucide="settings" class="w-5 h-5 mb-0.5"></i>
+        <span class="text-[10px] font-semibold">Settings</span>
+      </button>
+    </div>
+  </nav>
+
+  <!-- MODAL 1: Add / Edit Event (With Guests / Plates Terminology) -->
+  <div id="eventModal" class="fixed inset-0 z-50 bg-black/85 backdrop-blur-md hidden flex items-end sm:items-center justify-center p-0 sm:p-4 transition">
+    <div class="bg-[#1C1C1E] border border-[#2C2C2E] w-full max-w-xl max-h-[92vh] flex flex-col rounded-t-[32px] sm:rounded-3xl shadow-2xl overflow-hidden animate-in fade-in slide-in-from-bottom-6">
+      
+      <!-- Modal Header -->
+      <div class="px-5 py-4 border-b border-[#2C2C2E] flex items-center justify-between">
+        <div class="flex items-center gap-2">
+          <span class="text-xl">📝</span>
+          <h3 id="modalTitle" class="text-base font-bold text-white">New Catering Event</h3>
+        </div>
+        <button onclick="closeEventModal()" class="w-8 h-8 rounded-full bg-[#2C2C2E] flex items-center justify-center text-[#8E8E93] hover:text-white">
+          <i data-lucide="x" class="w-4 h-4"></i>
+        </button>
+      </div>
+
+      <!-- Modal Body (Scrollable) -->
+      <div class="p-5 overflow-y-auto space-y-4 text-xs">
+        <input type="hidden" id="editEventId">
+
+        <!-- Title & Status -->
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+          <div class="sm:col-span-2 space-y-1">
+            <label class="font-semibold text-white">Event Title / Occasion *</label>
+            <input type="text" id="evTitle" placeholder="e.g. Rahul & Pooja Reception" class="w-full p-3 bg-black border border-[#2C2C2E] rounded-xl text-white text-xs focus:border-[#E53935] focus:outline-none" required>
+          </div>
+          <div class="space-y-1">
+            <label class="font-semibold text-white">Status</label>
+            <select id="evStatus" class="w-full p-3 bg-black border border-[#2C2C2E] rounded-xl text-white text-xs focus:border-[#E53935] focus:outline-none">
+              <option value="Booked">🟢 Booked</option>
+              <option value="Confirmed">🟡 Advance Paid</option>
+              <option value="Completed">⚪ Completed</option>
+              <option value="Inquiry">🔵 Inquiry Only</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Date, Time & Guests/Plates -->
+        <div class="grid grid-cols-3 gap-2.5">
+          <div class="space-y-1">
+            <label class="font-semibold text-white">Date *</label>
+            <input type="date" id="evDate" class="w-full p-2.5 bg-black border border-[#2C2C2E] rounded-xl text-white text-xs focus:border-[#E53935] focus:outline-none" required>
+          </div>
+          <div class="space-y-1">
+            <label class="font-semibold text-white">Serving Time</label>
+            <input type="time" id="evTime" class="w-full p-2.5 bg-black border border-[#2C2C2E] rounded-xl text-white text-xs focus:border-[#E53935] focus:outline-none">
+          </div>
+          <div class="space-y-1">
+            <label class="font-semibold text-white">Guests / Plates *</label>
+            <input type="number" id="evGuests" placeholder="350" class="w-full p-2.5 bg-black border border-[#2C2C2E] rounded-xl text-white text-xs focus:border-[#E53935] focus:outline-none" required>
+          </div>
+        </div>
+
+        <!-- Venue & Client Phone 1 + Alternate Phone 2 -->
+        <div class="space-y-1">
+          <label class="font-semibold text-white">Venue / Hall Location</label>
+          <input type="text" id="evVenue" placeholder="e.g. Swathi Kalyana Mandapam, Neyyattinkara" class="w-full p-3 bg-black border border-[#2C2C2E] rounded-xl text-white text-xs focus:border-[#E53935] focus:outline-none">
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div class="space-y-1">
+            <label class="font-semibold text-white">Client Phone (WhatsApp) *</label>
+            <input type="tel" id="evPhone" placeholder="e.g. 9876543210" class="w-full p-3 bg-black border border-[#2C2C2E] rounded-xl text-white text-xs focus:border-[#E53935] focus:outline-none">
+          </div>
+          <div class="space-y-1">
+            <label class="font-semibold text-white">Second / Alternate Phone</label>
+            <input type="tel" id="evPhone2" placeholder="e.g. 9988776655 (Coordinator)" class="w-full p-3 bg-black border border-[#2C2C2E] rounded-xl text-white text-xs focus:border-[#E53935] focus:outline-none">
+          </div>
+        </div>
+
+        <!-- Financials & Service Style -->
+        <div class="grid grid-cols-3 gap-2.5 bg-black/60 p-3 rounded-2xl border border-[#2C2C2E]">
+          <div class="space-y-1">
+            <label class="text-[10px] font-semibold text-[#8E8E93]">Total Budget (₹)</label>
+            <input type="number" id="evBudget" placeholder="0" class="w-full p-2 bg-[#1C1C1E] border border-[#2C2C2E] rounded-xl text-white text-xs focus:border-[#E53935] focus:outline-none">
+          </div>
+          <div class="space-y-1">
+            <label class="text-[10px] font-semibold text-[#8E8E93]">Advance Paid (₹)</label>
+            <input type="number" id="evAdvance" placeholder="0" class="w-full p-2 bg-[#1C1C1E] border border-[#2C2C2E] rounded-xl text-white text-xs focus:border-[#E53935] focus:outline-none">
+          </div>
+          <div class="space-y-1">
+            <label class="text-[10px] font-semibold text-[#8E8E93]">Service Style</label>
+            <select id="evServiceStyle" class="w-full p-2 bg-[#1C1C1E] border border-[#2C2C2E] rounded-xl text-white text-xs focus:border-[#E53935] focus:outline-none">
+              <option value="Traditional Sadya (ഇലയിൽ)">Traditional Sadya (ഇലയിൽ)</option>
+              <option value="Buffet Counter">Buffet Counter</option>
+              <option value="Table Service">Table Service</option>
+              <option value="Live Counters">Live Counters</option>
+              <option value="Pack & Drop">Pack & Drop</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Catering Logistics: Plates & Plantain Leaves -->
+        <div class="bg-black/60 p-3 rounded-2xl border border-[#2C2C2E] space-y-2">
+          <div class="flex items-center justify-between">
+            <label class="font-bold text-white flex items-center gap-1.5">
+              <span>🍽️</span> Plates & Plantain Leaves Setup
+            </label>
+            <label class="flex items-center gap-1.5 cursor-pointer text-[#8E8E93]">
+              <input type="checkbox" id="evPlatesReq" checked onchange="togglePlatesSection()" class="rounded border-[#38383A] text-[#E53935] focus:ring-0">
+              <span>Required</span>
+            </label>
+          </div>
+          <div id="platesDetailBox" class="grid grid-cols-3 gap-2 pt-1 text-[11px]">
+            <div>
+              <span class="text-[#8E8E93] block mb-0.5">Type:</span>
+              <select id="evPlateType" class="w-full p-2 bg-[#1C1C1E] border border-[#2C2C2E] rounded-lg text-white">
+                <option value="Plantain Leaf (വാഴയില)">വാഴയില (Plantain Leaf)</option>
+                <option value="Melamine">Melamine Plates</option>
+                <option value="Ceramic / Bone China">Ceramic</option>
+                <option value="Disposable Eco">Eco Disposable</option>
+              </select>
+            </div>
+            <div>
+              <span class="text-[#8E8E93] block mb-0.5">Leaves/Plates Count:</span>
+              <input type="number" id="evPlateCount" placeholder="350" class="w-full p-2 bg-[#1C1C1E] border border-[#2C2C2E] rounded-lg text-white">
+            </div>
+            <div>
+              <span class="text-[#8E8E93] block mb-0.5">Glasses & Water:</span>
+              <input type="number" id="evCutleryCount" placeholder="400" class="w-full p-2 bg-[#1C1C1E] border border-[#2C2C2E] rounded-lg text-white">
+            </div>
+          </div>
+        </div>
+
+        <!-- Menu Builder with Travancore Sadya Categories -->
+        <div class="space-y-3 pt-2">
+          <div class="flex items-center justify-between">
+            <label class="font-bold text-sm text-[#E53935] flex items-center gap-1.5">
+              <span>🍲</span> Menu & Dishes List
+            </label>
+            <span class="text-[10px] text-[#8E8E93]">Type dish name & Enter</span>
+          </div>
+
+          <!-- Dishes Input by Categories -->
+          <div class="space-y-2.5">
+            <!-- Mains & Sadya Curries -->
+            <div class="bg-black/80 p-3 rounded-xl border border-[#2C2C2E]">
+              <span class="text-[11px] font-semibold text-white block mb-1.5">🍛 Sadya Curries & Mains</span>
+              <div id="pills-mains" class="flex flex-wrap gap-1.5 mb-1.5"></div>
+              <input type="text" onkeydown="handleDishTagInput(event, 'mains')" placeholder="+ Add (e.g. അവിയൽ, സാമ്പാർ, കാളൻ, ഓലൻ, ബീഫ് ഉലർത്തിയത്)" class="w-full bg-[#1C1C1E] border border-[#2C2C2E] text-xs px-3 py-2 rounded-lg text-white focus:outline-none focus:border-[#E53935]">
+            </div>
+
+            <!-- Pickles & Savouries -->
+            <div class="bg-black/80 p-3 rounded-xl border border-[#2C2C2E]">
+              <span class="text-[11px] font-semibold text-white block mb-1.5">🍢 Achars & Savouries</span>
+              <div id="pills-starters" class="flex flex-wrap gap-1.5 mb-1.5"></div>
+              <input type="text" onkeydown="handleDishTagInput(event, 'starters')" placeholder="+ Add (e.g. കടുമാങ്ങ, ഇഞ്ചിപ്പുളി, നാരങ്ങ അച്ചാർ, ചിപ്സ്)" class="w-full bg-[#1C1C1E] border border-[#2C2C2E] text-xs px-3 py-2 rounded-lg text-white focus:outline-none focus:border-[#E53935]">
+            </div>
+
+            <!-- Breads & Rice -->
+            <div class="bg-black/80 p-3 rounded-xl border border-[#2C2C2E]">
+              <span class="text-[11px] font-semibold text-white block mb-1.5">🍚 Rice & Breads</span>
+              <div id="pills-breads" class="flex flex-wrap gap-1.5 mb-1.5"></div>
+              <input type="text" onkeydown="handleDishTagInput(event, 'breads')" placeholder="+ Add (e.g. മട്ട ചോറ്, വെള്ള ചോറ്, പൊറോട്ട, അപ്പം)" class="w-full bg-[#1C1C1E] border border-[#2C2C2E] text-xs px-3 py-2 rounded-lg text-white focus:outline-none focus:border-[#E53935]">
+            </div>
+
+            <!-- Desserts & Payasams -->
+            <div class="bg-black/80 p-3 rounded-xl border border-[#2C2C2E]">
+              <span class="text-[11px] font-semibold text-white block mb-1.5">🍨 Payasams & Desserts</span>
+              <div id="pills-desserts" class="flex flex-wrap gap-1.5 mb-1.5"></div>
+              <input type="text" onkeydown="handleDishTagInput(event, 'desserts')" placeholder="+ Add (e.g. അടപ്രഥമൻ, പാൽപായസം, ബോളി, പഴം)" class="w-full bg-[#1C1C1E] border border-[#2C2C2E] text-xs px-3 py-2 rounded-lg text-white focus:outline-none focus:border-[#E53935]">
+            </div>
+          </div>
+        </div>
+
+        <!-- Special Notes -->
+        <div class="space-y-1">
+          <label class="font-semibold text-white">Special Notes & Instructions</label>
+          <textarea id="evNotes" rows="2" placeholder="e.g. Separate feast timing for VIP guests, buffet setup by 11:30 AM..." class="w-full p-3 bg-black border border-[#2C2C2E] rounded-xl text-white text-xs focus:border-[#E53935] focus:outline-none"></textarea>
+        </div>
+      </div>
+
+      <!-- Modal Footer -->
+      <div class="px-5 py-3.5 border-t border-[#2C2C2E] bg-black flex items-center justify-between">
+        <button type="button" onclick="closeEventModal()" class="px-4 py-2 text-xs font-semibold text-[#8E8E93] hover:text-white">Cancel</button>
+        <button type="button" onclick="saveEvent()" class="px-5 py-2.5 bg-[#E53935] hover:bg-[#D32F2F] active:scale-95 text-white text-xs font-bold rounded-xl shadow-lg transition">
+          Save Event
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- MODAL 2: View Event Details & Quick Actions -->
+  <div id="viewEventModal" class="fixed inset-0 z-50 bg-black/85 backdrop-blur-md hidden flex items-end sm:items-center justify-center p-0 sm:p-4">
+    <div class="bg-[#1C1C1E] border border-[#2C2C2E] w-full max-w-lg max-h-[92vh] flex flex-col rounded-t-[32px] sm:rounded-3xl shadow-2xl overflow-hidden">
+      
+      <div class="px-5 py-4 border-b border-[#2C2C2E] flex items-center justify-between bg-black">
+        <div class="flex items-center gap-2">
+          <span class="text-xl">📋</span>
+          <h3 id="viewModalTitle" class="text-sm font-bold text-white truncate max-w-[240px]">Event Details</h3>
+        </div>
+        <button onclick="closeViewModal()" class="w-8 h-8 rounded-full bg-[#2C2C2E] flex items-center justify-center text-[#8E8E93] hover:text-white">
+          <i data-lucide="x" class="w-4 h-4"></i>
+        </button>
+      </div>
+
+      <div id="viewModalContent" class="p-5 overflow-y-auto space-y-4 text-xs">
+        <!-- Injected dynamically -->
+      </div>
+
+      <div class="p-4 border-t border-[#2C2C2E] bg-black flex gap-2">
+        <button onclick="openSupplierModal(currentViewingEventId)" class="flex-1 py-3 bg-[#E53935] hover:bg-[#D32F2F] active:scale-95 text-white font-bold text-xs rounded-xl flex items-center justify-center gap-1.5 shadow-md transition">
+          <span>🥦</span> Veg & Store
+        </button>
+        <button onclick="openBillModal(currentViewingEventId, 'invoice')" class="flex-1 py-3 bg-[#2C2C2E] hover:bg-[#38383A] active:scale-95 text-white font-bold text-xs rounded-xl flex items-center justify-center gap-1.5 transition">
+          <span>📄</span> Bill & QR
+        </button>
+        <button onclick="openExpenseModal(currentViewingEventId)" class="py-3 px-3.5 bg-[#2C2C2E] hover:bg-[#38383A] active:scale-95 text-white font-bold text-xs rounded-xl flex items-center justify-center gap-1 transition">
+          <span>🧾</span> Bills
+        </button>
+        <button id="viewEditBtn" class="px-4 py-3 bg-black border border-[#2C2C2E] text-white font-semibold text-xs rounded-xl transition">
+          Edit
+        </button>
+        <button onclick="deleteEvent(currentViewingEventId)" class="px-3 py-3 bg-rose-950/40 border border-rose-900/50 hover:bg-rose-900/50 text-rose-300 font-semibold text-xs rounded-xl transition" title="Delete Event">
+          🗑️
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- MODAL 3: Store & Vegetable Procurement Lists (Bilingual + Category Chips) -->
+  <div id="supplierOrderModal" class="fixed inset-0 z-50 bg-black/85 backdrop-blur-md hidden flex items-end sm:items-center justify-center p-0 sm:p-4">
+    <div class="bg-[#1C1C1E] border border-[#2C2C2E] w-full max-w-lg max-h-[92vh] flex flex-col rounded-t-[32px] sm:rounded-3xl shadow-2xl overflow-hidden">
+      
+      <div class="px-5 py-4 border-b border-[#2C2C2E] flex items-center justify-between bg-black">
+        <div class="flex items-center gap-2">
+          <span class="text-xl">🥦</span>
+          <div>
+            <h3 class="text-sm font-bold text-white">Vegetable & Store Orders</h3>
+            <p class="text-[10px] text-[#8E8E93]">Wholesale market chits with dual WhatsApp</p>
+          </div>
+        </div>
+        <button onclick="closeSupplierModal()" class="w-8 h-8 rounded-full bg-[#2C2C2E] flex items-center justify-center text-[#8E8E93] hover:text-white">
+          <i data-lucide="x" class="w-4 h-4"></i>
+        </button>
+      </div>
+
+      <!-- Store Tabs: Replaced "Mandi" with Vegetable Store / Fruit Store -->
+      <div class="flex gap-1.5 p-3 overflow-x-auto no-scrollbar border-b border-[#2C2C2E] bg-black">
+        <button onclick="setSupplierTab('veggies')" id="supTab-veggies" class="sup-tab-btn py-1.5 px-3 rounded-xl text-xs font-bold bg-[#E53935] text-white whitespace-nowrap">🥦 Vegetable Store (പച്ചക്കറി)</button>
+        <button onclick="setSupplierTab('fruits')" id="supTab-fruits" class="sup-tab-btn py-1.5 px-3 rounded-xl text-xs font-semibold bg-[#2C2C2E] text-[#8E8E93] whitespace-nowrap">🍎 Fruit Store (പഴങ്ങൾ)</button>
+        <button onclick="setSupplierTab('grocery')" id="supTab-grocery" class="sup-tab-btn py-1.5 px-3 rounded-xl text-xs font-semibold bg-[#2C2C2E] text-[#8E8E93] whitespace-nowrap">🏬 Kirana / Grocery</button>
+        <button onclick="setSupplierTab('dairy')" id="supTab-dairy" class="sup-tab-btn py-1.5 px-3 rounded-xl text-xs font-semibold bg-[#2C2C2E] text-[#8E8E93] whitespace-nowrap">🧀 Dairy & Milk</button>
+        <button onclick="setSupplierTab('meat')" id="supTab-meat" class="sup-tab-btn py-1.5 px-3 rounded-xl text-xs font-semibold bg-[#2C2C2E] text-[#8E8E93] whitespace-nowrap">🍗 Meat / Poultry</button>
+        <button onclick="setSupplierTab('rentals')" id="supTab-rentals" class="sup-tab-btn py-1.5 px-3 rounded-xl text-xs font-semibold bg-[#2C2C2E] text-[#8E8E93] whitespace-nowrap">🪑 Bartan & Gear</button>
+      </div>
+
+      <!-- Category Filter Chips (Tubers, Gourds, Banana, Spices, Greens) -->
+      <div id="mandiCategoryChips" class="flex gap-1.5 px-3 py-2 overflow-x-auto no-scrollbar border-b border-[#2C2C2E]/60 bg-[#1C1C1E]">
+        <button onclick="filterMandiCategory('selected')" class="mandi-chip px-2.5 py-1 rounded-lg text-[11px] font-bold bg-amber-500/20 text-amber-400 border border-amber-500/30 whitespace-nowrap">🔥 Selected (0)</button>
+        <button onclick="filterMandiCategory('all')" class="mandi-chip px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-[#2C2C2E] text-white whitespace-nowrap">All (എല്ലാം)</button>
+        <button onclick="filterMandiCategory('tubers')" class="mandi-chip px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-[#2C2C2E] text-[#8E8E93] whitespace-nowrap">🥔 കിഴങ്ങുകൾ (Tubers)</button>
+        <button onclick="filterMandiCategory('gourds')" class="mandi-chip px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-[#2C2C2E] text-[#8E8E93] whitespace-nowrap">🥒 പച്ചക്കറികൾ (Gourds)</button>
+        <button onclick="filterMandiCategory('banana')" class="mandi-chip px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-[#2C2C2E] text-[#8E8E93] whitespace-nowrap">🍌 വാഴ & തേങ്ങ</button>
+        <button onclick="filterMandiCategory('spices')" class="mandi-chip px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-[#2C2C2E] text-[#8E8E93] whitespace-nowrap">🌶️ മുളക്-ഇഞ്ചി</button>
+        <button onclick="filterMandiCategory('greens')" class="mandi-chip px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-[#2C2C2E] text-[#8E8E93] whitespace-nowrap">🌿 ഇലക്കറികൾ</button>
+      </div>
+
+      <!-- Supplier Content Body -->
+      <div class="p-4 overflow-y-auto space-y-3.5 text-xs flex-1">
+        <div class="bg-black p-3 rounded-2xl border border-[#2C2C2E] flex items-center justify-between">
+          <div>
+            <span class="text-[10px] text-[#8E8E93] font-semibold block uppercase">Vendor Phone:</span>
+            <input type="tel" id="supplierVendorPhone" placeholder="+91 98765 00000" class="bg-transparent text-white font-bold text-xs focus:outline-none">
+          </div>
+          <span id="supplierCategoryBadge" class="text-[10px] px-2.5 py-1 rounded-full bg-[#2C2C2E] text-white font-medium">🥦 Vegetable Store</span>
+        </div>
+
+        <div class="space-y-1.5">
+          <label class="text-[11px] font-semibold text-white flex items-center justify-between">
+            <span>Items with Quantities</span>
+            <span class="text-[10px] text-[#8E8E93]">Tap steppers or type numbers</span>
+          </label>
+          <div id="supplierItemsList" class="space-y-1.5 max-h-72 overflow-y-auto pr-1"></div>
+          
+          <!-- + Add Unknown Custom Item Button -->
+          <div class="flex gap-1.5 pt-1">
+            <input type="text" id="newSupplierItemInput" placeholder="+ Add custom item (e.g. Manga Inji, Kooran)" class="flex-1 bg-black border border-[#2C2C2E] text-xs p-2.5 rounded-xl text-white focus:outline-none focus:border-[#E53935]">
+            <button onclick="addSupplierItemFromInput()" class="bg-[#2C2C2E] hover:bg-[#38383A] text-white text-xs px-4 rounded-xl font-bold">Add</button>
+          </div>
+        </div>
+
+        <!-- WhatsApp Preview Box -->
+        <div class="bg-black p-3 rounded-2xl border border-[#2C2C2E] space-y-1.5">
+          <span class="text-[10px] text-[#8E8E93] font-bold block uppercase">Chit Preview (Zero-quantity items filtered):</span>
+          <pre id="supplierMessagePreview" class="text-[11px] font-mono text-emerald-300 whitespace-pre-wrap max-h-32 overflow-y-auto no-scrollbar"></pre>
+        </div>
+      </div>
+
+      <!-- Footer: Dual WhatsApp Action (Direct + Share to Anyone) -->
+      <div class="p-4 border-t border-[#2C2C2E] bg-black grid grid-cols-2 gap-2">
+        <button onclick="dispatchSupplierWhatsAppDirect()" class="py-3 bg-emerald-600 hover:bg-emerald-500 active:scale-95 text-white font-bold text-xs rounded-xl flex items-center justify-center gap-1.5 shadow-md transition">
+          <span>💬</span> WhatsApp Direct
+        </button>
+        <button onclick="shareSupplierChitUniversal()" class="py-3 bg-[#2C2C2E] hover:bg-[#38383A] active:scale-95 text-white font-bold text-xs rounded-xl flex items-center justify-center gap-1.5 transition">
+          <span>🔗</span> Share to Anyone
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- MODAL 4: Banquet Invoice & Estimate with Offline UPI QR -->
+  <div id="billInvoiceModal" class="fixed inset-0 z-50 bg-black/85 backdrop-blur-md hidden flex items-end sm:items-center justify-center p-0 sm:p-4">
+    <div class="bg-[#1C1C1E] border border-[#2C2C2E] w-full max-w-lg max-h-[92vh] flex flex-col rounded-t-[32px] sm:rounded-3xl shadow-2xl overflow-hidden">
+      
+      <div class="px-5 py-3.5 border-b border-[#2C2C2E] flex items-center justify-between bg-black">
+        <div class="flex items-center gap-2">
+          <span class="text-xl">📄</span>
+          <h3 id="invoiceModalTitle" class="text-sm font-bold text-white">Banquet Invoice</h3>
+        </div>
+        <div class="flex items-center gap-2">
+          <button onclick="toggleBillType()" id="toggleBillTypeBtn" class="text-[10px] font-bold px-2.5 py-1 rounded-xl bg-[#2C2C2E] text-amber-400 border border-amber-500/30">
+            Switch to Estimate
+          </button>
+          <button onclick="closeBillModal()" class="w-8 h-8 rounded-full bg-[#2C2C2E] flex items-center justify-center text-[#8E8E93] hover:text-white">
+            <i data-lucide="x" class="w-4 h-4"></i>
+          </button>
+        </div>
+      </div>
+
+      <!-- Printable Invoice Area -->
+      <div id="printableInvoiceArea" class="p-5 overflow-y-auto space-y-4 text-xs bg-black text-[#F5F5F7] flex-1">
+        <!-- Injected dynamically -->
+      </div>
+
+      <div class="p-4 border-t border-[#2C2C2E] bg-black grid grid-cols-2 gap-2">
+        <button onclick="window.print()" class="py-3 bg-[#2C2C2E] hover:bg-[#38383A] text-white font-bold text-xs rounded-xl flex items-center justify-center gap-1.5 transition">
+          <span>🖨️</span> Print / PDF
+        </button>
+        <button onclick="shareInvoiceWhatsApp()" class="py-3 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs rounded-xl flex items-center justify-center gap-1.5 shadow-md transition">
+          <span>💬</span> Send WhatsApp
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- MODAL 5: Purchase Bills & Expense Tracker with Client-Side Canvas Image Compression -->
+  <div id="expenseTrackerModal" class="fixed inset-0 z-50 bg-black/85 backdrop-blur-md hidden flex items-end sm:items-center justify-center p-0 sm:p-4">
+    <div class="bg-[#1C1C1E] border border-[#2C2C2E] w-full max-w-lg max-h-[92vh] flex flex-col rounded-t-[32px] sm:rounded-3xl shadow-2xl overflow-hidden">
+      
+      <div class="px-5 py-4 border-b border-[#2C2C2E] flex items-center justify-between bg-black">
+        <div class="flex items-center gap-2">
+          <span class="text-xl">🧾</span>
+          <div>
+            <h3 class="text-sm font-bold text-white">Purchase Bills & Expenses</h3>
+            <p class="text-[10px] text-[#8E8E93]">Compressed photo storage & profit tracker</p>
+          </div>
+        </div>
+        <button onclick="closeExpenseModal()" class="w-8 h-8 rounded-full bg-[#2C2C2E] flex items-center justify-center text-[#8E8E93] hover:text-white">
+          <i data-lucide="x" class="w-4 h-4"></i>
+        </button>
+      </div>
+
+      <div class="p-5 overflow-y-auto space-y-4 text-xs flex-1">
+        <!-- Event Profit Margin Summary Card -->
+        <div class="grid grid-cols-3 gap-2 bg-black p-3 rounded-2xl border border-[#2C2C2E] text-center">
+          <div>
+            <span class="text-[10px] text-[#8E8E93] font-semibold block">Total Revenue</span>
+            <span id="expTotalRev" class="text-sm font-bold text-emerald-400">₹0</span>
+          </div>
+          <div>
+            <span class="text-[10px] text-[#8E8E93] font-semibold block">Total Bills</span>
+            <span id="expTotalCost" class="text-sm font-bold text-rose-400">₹0</span>
+          </div>
+          <div>
+            <span class="text-[10px] text-[#8E8E93] font-semibold block">Net Profit</span>
+            <span id="expNetProfit" class="text-sm font-bold text-[#E53935]">₹0</span>
+          </div>
+        </div>
+
+        <!-- Add Expense Form with Client-Side Canvas Image Compression -->
+        <div class="bg-black/70 p-3.5 rounded-2xl border border-[#2C2C2E] space-y-3">
+          <h4 class="text-xs font-bold text-[#E53935] flex items-center gap-1.5">
+            <span>➕</span> Add Total Store Bill
+          </h4>
+          <div class="grid grid-cols-2 gap-2">
+            <div>
+              <label class="text-[10px] text-[#8E8E93] block mb-1">Store / Category</label>
+              <select id="newExpCategory" class="w-full p-2.5 bg-[#1C1C1E] border border-[#2C2C2E] rounded-xl text-white text-xs">
+                <option value="Vegetables">Vegetable Store (പച്ചക്കറി)</option>
+                <option value="Fruits">Fruit Store (പഴങ്ങൾ)</option>
+                <option value="Grocery">Kirana & Spices</option>
+                <option value="Dairy">Dairy & Milk</option>
+                <option value="Meat">Meat & Poultry</option>
+                <option value="Rentals">Bartan / Equipment</option>
+                <option value="Gas & Fuel">Gas Cylinders & Fuel</option>
+                <option value="Labor">Staff Wages</option>
+                <option value="Other">Other</option>
+              </select>
+            </div>
+            <div>
+              <label class="text-[10px] text-[#8E8E93] block mb-1">Total Bill Amount (₹) *</label>
+              <input type="number" id="newExpAmount" placeholder="18500" class="w-full p-2.5 bg-[#1C1C1E] border border-[#2C2C2E] rounded-xl text-white text-xs focus:border-[#E53935] focus:outline-none" required>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-2 gap-2">
+            <div>
+              <label class="text-[10px] text-[#8E8E93] block mb-1">Store / Vendor Name</label>
+              <input type="text" id="newExpVendor" placeholder="e.g. Kanjiramkulam Store" class="w-full p-2.5 bg-[#1C1C1E] border border-[#2C2C2E] rounded-xl text-white text-xs focus:border-[#E53935] focus:outline-none">
+            </div>
+            <div>
+              <label class="text-[10px] text-[#8E8E93] block mb-1">Bill Date</label>
+              <input type="date" id="newExpDate" class="w-full p-2.5 bg-[#1C1C1E] border border-[#2C2C2E] rounded-xl text-white text-xs focus:border-[#E53935] focus:outline-none">
+            </div>
+          </div>
+
+          <!-- Photo Upload & Automatic 120KB Canvas Compression -->
+          <div class="space-y-1.5 pt-1">
+            <label class="text-[10px] text-[#8E8E93] font-semibold block">Snap Paper Bill Photo (Auto-compressed to ~120KB):</label>
+            <div class="flex items-center gap-2">
+              <label class="flex-1 flex items-center justify-center gap-1.5 py-2.5 px-3 bg-[#1C1C1E] hover:bg-[#2C2C2E] border border-[#2C2C2E] rounded-xl text-white text-xs cursor-pointer active:scale-98 transition">
+                <span>📸</span> Take Photo / Select Image
+                <input type="file" id="receiptPhotoInput" accept="image/*" capture="environment" onchange="handleReceiptImageUpload(event)" class="hidden">
+              </label>
+              <span id="receiptPhotoStatus" class="text-[11px] text-[#8E8E93] truncate max-w-[140px]">No photo</span>
+            </div>
+            <div id="receiptThumbnailPreview" class="hidden relative rounded-xl overflow-hidden border border-[#2C2C2E] max-h-36">
+              <img id="receiptPreviewImg" class="w-full h-auto object-cover">
+              <button onclick="clearReceiptImage()" class="absolute top-1 right-1 w-6 h-6 rounded-full bg-black/80 text-white text-xs flex items-center justify-center">×</button>
+            </div>
+          </div>
+
+          <button onclick="savePurchaseExpense()" class="w-full py-3 bg-[#E53935] hover:bg-[#D32F2F] text-white font-bold text-xs rounded-xl shadow-md transition">
+            Save Purchase Bill
+          </button>
+        </div>
+
+        <!-- Logged Bills List -->
+        <div class="space-y-2">
+          <h4 class="text-xs font-bold text-white flex items-center justify-between">
+            <span>📋 Logged Bills for this Event</span>
+            <span id="expCountBadge" class="text-[10px] text-[#8E8E93]">0 bills</span>
+          </h4>
+          <div id="expenseItemsList" class="space-y-2"></div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Storage Layer -->
+  <script src="./js/db.js"></script>
+  <!-- Application Logic -->
+  <script src="./app.js"></script>
+</body>
+</html>

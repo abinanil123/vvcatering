@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#f59e0b" />
+      <stop offset="100%" stop-color="#d97706" />
+    </linearGradient>
+    <filter id="shadow" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="8" stdDeviation="12" flood-opacity="0.3" />
+    </filter>
+  </defs>
+  <rect width="512" height="512" rx="115" fill="url(#bg)" />
+  <g fill="#ffffff" filter="url(#shadow)">
+    <!-- Cloche dome -->
+    <path d="M 256 140 C 248 140 242 146 242 154 C 242 156 242.5 158 243.3 160 C 170 170 114 233 112 310 L 400 310 C 398 233 342 170 268.7 160 C 269.5 158 270 156 270 154 C 270 146 264 140 256 140 Z M 256 112 A 20 20 0 1 0 256 152 A 20 20 0 1 0 256 112 Z" />
+    <!-- Serving Platter base -->
+    <rect x="96" y="324" width="320" height="24" rx="12" />
+    <!-- Steam swirls -->
+    <path d="M 190 90 C 180 80 180 60 190 50" stroke="#ffffff" stroke-width="8" stroke-linecap="round" fill="none" opacity="0.8" />
+    <path d="M 256 80 C 246 70 246 50 256 40" stroke="#ffffff" stroke-width="8" stroke-linecap="round" fill="none" opacity="0.8" />
+    <path d="M 322 90 C 312 80 312 60 322 50" stroke="#ffffff" stroke-width="8" stroke-linecap="round" fill="none" opacity="0.8" />
+    <!-- Subtle fork & spoon below -->
+    <rect x="156" y="372" width="200" height="10" rx="5" opacity="0.5" />
+  </g>
+</svg>

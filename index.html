@@ -302,56 +302,62 @@
         </div>
       </div>
 
-      <!-- Private Team Sync Code & Security Lock -->
+      <!-- Wholesale Vendor Directory (പച്ചക്കറി, പലചരക്ക്, ഇറച്ചി വ്യാപാരികൾ) -->
       <div class="apple-card p-4 rounded-3xl space-y-3.5 border border-[#38383A]">
         <div class="flex items-center justify-between">
           <div class="flex items-center gap-3">
-            <div class="w-10 h-10 rounded-2xl bg-[#E53935]/20 text-[#E53935] flex items-center justify-center text-xl font-bold">
-              🔑
+            <div class="w-10 h-10 rounded-2xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center text-xl font-bold">
+              🏪
             </div>
             <div>
-              <h3 class="text-sm font-bold text-white">Private Business Sync Code</h3>
-              <p class="text-[10px] text-[#8E8E93]">Pair devices for Uncle & Staff</p>
+              <h3 class="text-sm font-bold text-white">Wholesale Vendor Directory</h3>
+              <p class="text-[10px] text-[#8E8E93]">Saved suppliers for 1-tap WhatsApp market orders</p>
             </div>
           </div>
-          <span id="teamSyncStatusPill" class="text-[10px] px-2.5 py-0.5 rounded-full font-bold bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
-            🟢 Paired
-          </span>
+          <button onclick="toggleAddVendorForm()" class="px-3 py-1.5 bg-[#E53935] hover:bg-[#D32F2F] active:scale-95 text-white font-bold text-xs rounded-xl transition">
+            + Add Vendor
+          </button>
         </div>
 
-        <p class="text-xs text-[#8E8E93] leading-relaxed">
-          Only devices with this code can sync and view catering bookings. Keeps data private from competitors and unauthorized phones.
-        </p>
-
-        <!-- Active Sync Key Box -->
-        <div class="bg-black p-3.5 rounded-2xl border border-[#2C2C2E] space-y-2">
-          <span class="text-[10px] text-[#8E8E93] uppercase font-bold block">Current Business Code:</span>
-          <div class="flex items-center justify-between gap-2">
-            <span id="currentTeamCodeDisplay" class="font-mono text-base font-extrabold text-[#E53935] tracking-wider">
-              VV-695121
-            </span>
-            <button onclick="copyTeamSyncCode()" class="px-3 py-1.5 rounded-xl bg-[#2C2C2E] hover:bg-[#38383A] text-white text-xs font-semibold flex items-center gap-1 active:scale-95 transition">
-              <span>📋</span> Copy Code
+        <!-- Add/Edit Vendor Form (Collapsible) -->
+        <div id="vendorFormBox" class="hidden bg-black p-3.5 rounded-2xl border border-[#2C2C2E] space-y-2.5 animate-in fade-in">
+          <h4 class="text-xs font-bold text-white flex items-center gap-1.5">
+            <span>✍️</span> Add / Edit Wholesale Vendor
+          </h4>
+          <input type="hidden" id="editVendorId" value="">
+          <div class="space-y-1">
+            <label class="text-[10px] font-semibold text-[#8E8E93]">Vendor / Shop Name</label>
+            <input type="text" id="vendorNameInput" placeholder="e.g. Chalai Murugan Veg, Neyyattinkara Meat" class="w-full p-2 bg-[#1C1C1E] border border-[#2C2C2E] rounded-xl text-white text-xs focus:border-[#E53935] focus:outline-none">
+          </div>
+          <div class="grid grid-cols-2 gap-2">
+            <div class="space-y-1">
+              <label class="text-[10px] font-semibold text-[#8E8E93]">Store Category</label>
+              <select id="vendorCategoryInput" class="w-full p-2 bg-[#1C1C1E] border border-[#2C2C2E] rounded-xl text-white text-xs focus:border-[#E53935] focus:outline-none">
+                <option value="veggies">🥦 Vegetable Shop</option>
+                <option value="fruits">🍎 Fruit Store</option>
+                <option value="grocery">🏬 Kirana / Grocery</option>
+                <option value="dairy">🧀 Dairy & Milk</option>
+                <option value="meat">🍗 Meat & Poultry</option>
+                <option value="rentals">🪑 Bartan & Rentals</option>
+              </select>
+            </div>
+            <div class="space-y-1">
+              <label class="text-[10px] font-semibold text-[#8E8E93]">WhatsApp Phone</label>
+              <input type="tel" id="vendorPhoneInput" placeholder="9847000000" class="w-full p-2 bg-[#1C1C1E] border border-[#2C2C2E] rounded-xl text-white text-xs font-mono focus:border-[#E53935] focus:outline-none">
+            </div>
+          </div>
+          <div class="flex gap-2 pt-1">
+            <button onclick="saveVendorFromForm()" class="flex-1 py-2 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs rounded-xl transition">
+              Save Vendor
+            </button>
+            <button onclick="toggleAddVendorForm(false)" class="px-3 py-2 bg-[#2C2C2E] text-[#8E8E93] font-semibold text-xs rounded-xl">
+              Cancel
             </button>
           </div>
         </div>
 
-        <!-- Pair New Device Input -->
-        <div class="space-y-1.5 pt-1">
-          <label class="text-[11px] font-semibold text-white block">Pair Staff Phone (Enter Code):</label>
-          <div class="flex gap-2">
-            <input 
-              type="text" 
-              id="pairTeamCodeInput" 
-              placeholder="e.g. VV-695121" 
-              class="flex-1 p-2.5 bg-black border border-[#2C2C2E] rounded-xl text-xs font-mono uppercase text-white focus:border-[#E53935] focus:outline-none"
-            >
-            <button onclick="pairDeviceWithTeamCode()" class="px-4 py-2.5 bg-[#E53935] hover:bg-[#D32F2F] active:scale-95 text-white font-bold text-xs rounded-xl shadow-md transition">
-              Pair
-            </button>
-          </div>
-          <span id="pairCodeErrorMsg" class="text-[11px] text-rose-400 hidden block"></span>
-        </div>
+        <!-- Saved Vendors List -->
+        <div id="savedVendorsList" class="space-y-2 max-h-56 overflow-y-auto pr-1"></div>
       </div>
 
       <!-- Automated Ops & Alarm Toggles (T-3h Van, T-24h Kitchen, T+24h Review) -->
@@ -532,23 +538,27 @@
           </div>
         </div>
 
-        <!-- Financials & Service Style -->
-        <div class="grid grid-cols-3 gap-2.5 bg-black/60 p-3 rounded-2xl border border-[#2C2C2E]">
+        <!-- Financials with Rate Per Plate Calculator -->
+        <div class="grid grid-cols-4 gap-2 bg-black/60 p-3 rounded-2xl border border-[#2C2C2E]">
+          <div class="space-y-1">
+            <label class="text-[10px] font-semibold text-[#8E8E93]">Rate/Plate (₹)</label>
+            <input type="number" id="evRatePerPlate" oninput="calcTotalBudget()" placeholder="240" class="w-full p-2 bg-[#1C1C1E] border border-[#2C2C2E] rounded-xl text-white text-xs focus:border-[#E53935] focus:outline-none">
+          </div>
           <div class="space-y-1">
             <label class="text-[10px] font-semibold text-[#8E8E93]">Total Budget (₹)</label>
             <input type="number" id="evBudget" placeholder="0" class="w-full p-2 bg-[#1C1C1E] border border-[#2C2C2E] rounded-xl text-white text-xs focus:border-[#E53935] focus:outline-none">
           </div>
           <div class="space-y-1">
-            <label class="text-[10px] font-semibold text-[#8E8E93]">Advance Paid (₹)</label>
+            <label class="text-[10px] font-semibold text-[#8E8E93]">Advance (₹)</label>
             <input type="number" id="evAdvance" placeholder="0" class="w-full p-2 bg-[#1C1C1E] border border-[#2C2C2E] rounded-xl text-white text-xs focus:border-[#E53935] focus:outline-none">
           </div>
           <div class="space-y-1">
             <label class="text-[10px] font-semibold text-[#8E8E93]">Service Style</label>
             <select id="evServiceStyle" class="w-full p-2 bg-[#1C1C1E] border border-[#2C2C2E] rounded-xl text-white text-xs focus:border-[#E53935] focus:outline-none">
-              <option value="Traditional Sadya (ഇലയിൽ)">Traditional Sadya (ഇലയിൽ)</option>
+              <option value="Traditional Sadya (ഇലയിൽ)">Sadya (ഇലയിൽ)</option>
               <option value="Buffet Counter">Buffet Counter</option>
-              <option value="Table Service">Table Service</option>
               <option value="Live Counters">Live Counters</option>
+              <option value="Table Service">Table Service</option>
               <option value="Pack & Drop">Pack & Drop</option>
             </select>
           </div>
@@ -586,43 +596,83 @@
           </div>
         </div>
 
-        <!-- Menu Builder with Travancore Sadya Categories -->
+        <!-- Menu Builder with Fast Search & 1-Tap Pick from Menu Bank -->
         <div class="space-y-3 pt-2">
           <div class="flex items-center justify-between">
             <label class="font-bold text-sm text-[#E53935] flex items-center gap-1.5">
               <span>🍲</span> Menu & Dishes List
             </label>
-            <span class="text-[10px] text-[#8E8E93]">Type dish name & Enter</span>
+            <span class="text-[10px] text-[#8E8E93]">1-tap add or type custom</span>
+          </div>
+
+          <!-- Quick Dish Picker from Menu Bank -->
+          <div class="bg-black p-3 rounded-2xl border border-[#2C2C2E] space-y-2">
+            <div class="flex items-center justify-between">
+              <span class="text-[11px] font-bold text-white flex items-center gap-1">
+                <span>⚡</span> Quick Add from Menu Bank:
+              </span>
+              <select id="quickMenuTargetCat" class="bg-[#1C1C1E] border border-[#2C2C2E] text-white text-[10px] px-2 py-1 rounded-lg">
+                <option value="auto">⚡ Auto-Route Category</option>
+                <option value="mains">🍛 Mains / Biryani</option>
+                <option value="starters">🍢 Achars / Starters</option>
+                <option value="breads">🍚 Breads / Rice</option>
+                <option value="desserts">🍨 Desserts / Fountain</option>
+                <option value="drinks">🥤 Welcome Drinks</option>
+              </select>
+            </div>
+            <div class="relative">
+              <input 
+                type="text" 
+                id="menuBankSearchInput" 
+                oninput="filterMenuBankPills(this.value)" 
+                placeholder="🔍 Search dishes (e.g. Biryani, Beef, Porotta, Ice Cream, Avial)..." 
+                class="w-full bg-[#1C1C1E] border border-[#2C2C2E] text-xs p-2.5 rounded-xl text-white placeholder-[#8E8E93] focus:outline-none focus:border-[#E53935]"
+              >
+            </div>
+            <!-- Dynamic Dish Chips from Menu Bank -->
+            <div id="quickDishPillsContainer" class="flex flex-wrap gap-1.5 max-h-32 overflow-y-auto pr-1"></div>
           </div>
 
           <!-- Dishes Input by Categories -->
           <div class="space-y-2.5">
-            <!-- Mains & Sadya Curries -->
+            <!-- Mains & Biryanis / Curries -->
             <div class="bg-black/80 p-3 rounded-xl border border-[#2C2C2E]">
-              <span class="text-[11px] font-semibold text-white block mb-1.5">🍛 Sadya Curries & Mains</span>
+              <span class="text-[11px] font-semibold text-white block mb-1.5">🍛 Curries, Biryani & Mains</span>
               <div id="pills-mains" class="flex flex-wrap gap-1.5 mb-1.5"></div>
-              <input type="text" onkeydown="handleDishTagInput(event, 'mains')" placeholder="+ Add (e.g. അവിയൽ, സാമ്പാർ, കാളൻ, ഓലൻ, ബീഫ് ഉലർത്തിയത്)" class="w-full bg-[#1C1C1E] border border-[#2C2C2E] text-xs px-3 py-2 rounded-lg text-white focus:outline-none focus:border-[#E53935]">
+              <div class="flex gap-2">
+                <input type="text" id="input-mains" onkeydown="handleDishTagInput(event, 'mains')" placeholder="Type custom dish..." class="flex-1 bg-[#1C1C1E] border border-[#2C2C2E] text-xs px-3 py-2 rounded-lg text-white focus:outline-none focus:border-[#E53935]">
+                <button type="button" onclick="addCustomDishDirect('mains')" class="px-3.5 py-2 bg-[#2C2C2E] hover:bg-[#38383A] text-white font-bold text-xs rounded-lg transition">+ Add</button>
+              </div>
             </div>
 
-            <!-- Pickles & Savouries -->
+            <!-- Starters & Achars -->
             <div class="bg-black/80 p-3 rounded-xl border border-[#2C2C2E]">
-              <span class="text-[11px] font-semibold text-white block mb-1.5">🍢 Achars & Savouries</span>
+              <span class="text-[11px] font-semibold text-white block mb-1.5">🍢 Achars, Starters & Sides</span>
               <div id="pills-starters" class="flex flex-wrap gap-1.5 mb-1.5"></div>
-              <input type="text" onkeydown="handleDishTagInput(event, 'starters')" placeholder="+ Add (e.g. കടുമാങ്ങ, ഇഞ്ചിപ്പുളി, നാരങ്ങ അച്ചാർ, ചിപ്സ്)" class="w-full bg-[#1C1C1E] border border-[#2C2C2E] text-xs px-3 py-2 rounded-lg text-white focus:outline-none focus:border-[#E53935]">
+              <div class="flex gap-2">
+                <input type="text" id="input-starters" onkeydown="handleDishTagInput(event, 'starters')" placeholder="Type custom starter..." class="flex-1 bg-[#1C1C1E] border border-[#2C2C2E] text-xs px-3 py-2 rounded-lg text-white focus:outline-none focus:border-[#E53935]">
+                <button type="button" onclick="addCustomDishDirect('starters')" class="px-3.5 py-2 bg-[#2C2C2E] hover:bg-[#38383A] text-white font-bold text-xs rounded-lg transition">+ Add</button>
+              </div>
             </div>
 
             <!-- Breads & Rice -->
             <div class="bg-black/80 p-3 rounded-xl border border-[#2C2C2E]">
-              <span class="text-[11px] font-semibold text-white block mb-1.5">🍚 Rice & Breads</span>
+              <span class="text-[11px] font-semibold text-white block mb-1.5">🍚 Rice & Breads (Porotta, Appam, Matta Rice)</span>
               <div id="pills-breads" class="flex flex-wrap gap-1.5 mb-1.5"></div>
-              <input type="text" onkeydown="handleDishTagInput(event, 'breads')" placeholder="+ Add (e.g. മട്ട ചോറ്, വെള്ള ചോറ്, പൊറോട്ട, അപ്പം)" class="w-full bg-[#1C1C1E] border border-[#2C2C2E] text-xs px-3 py-2 rounded-lg text-white focus:outline-none focus:border-[#E53935]">
+              <div class="flex gap-2">
+                <input type="text" id="input-breads" onkeydown="handleDishTagInput(event, 'breads')" placeholder="Type custom bread/rice..." class="flex-1 bg-[#1C1C1E] border border-[#2C2C2E] text-xs px-3 py-2 rounded-lg text-white focus:outline-none focus:border-[#E53935]">
+                <button type="button" onclick="addCustomDishDirect('breads')" class="px-3.5 py-2 bg-[#2C2C2E] hover:bg-[#38383A] text-white font-bold text-xs rounded-lg transition">+ Add</button>
+              </div>
             </div>
 
-            <!-- Desserts & Payasams -->
+            <!-- Desserts, Ice Cream & Chocolate Fountain -->
             <div class="bg-black/80 p-3 rounded-xl border border-[#2C2C2E]">
-              <span class="text-[11px] font-semibold text-white block mb-1.5">🍨 Payasams & Desserts</span>
+              <span class="text-[11px] font-semibold text-white block mb-1.5">🍨 Payasams, Ice Cream & Chocolate Fountain</span>
               <div id="pills-desserts" class="flex flex-wrap gap-1.5 mb-1.5"></div>
-              <input type="text" onkeydown="handleDishTagInput(event, 'desserts')" placeholder="+ Add (e.g. അടപ്രഥമൻ, പാൽപായസം, ബോളി, പഴം)" class="w-full bg-[#1C1C1E] border border-[#2C2C2E] text-xs px-3 py-2 rounded-lg text-white focus:outline-none focus:border-[#E53935]">
+              <div class="flex gap-2">
+                <input type="text" id="input-desserts" onkeydown="handleDishTagInput(event, 'desserts')" placeholder="Type custom dessert..." class="flex-1 bg-[#1C1C1E] border border-[#2C2C2E] text-xs px-3 py-2 rounded-lg text-white focus:outline-none focus:border-[#E53935]">
+                <button type="button" onclick="addCustomDishDirect('desserts')" class="px-3.5 py-2 bg-[#2C2C2E] hover:bg-[#38383A] text-white font-bold text-xs rounded-lg transition">+ Add</button>
+              </div>
             </div>
           </div>
         </div>
@@ -665,13 +715,13 @@
 
       <div class="p-4 border-t border-[#2C2C2E] bg-black flex gap-2">
         <button onclick="openSupplierModal(currentViewingEventId)" class="flex-1 py-3 bg-[#E53935] hover:bg-[#D32F2F] active:scale-95 text-white font-bold text-xs rounded-xl flex items-center justify-center gap-1.5 shadow-md transition">
-          <span>🥦</span> Veg & Store
+          <span>🥦</span> Market Orders
         </button>
         <button onclick="openBillModal(currentViewingEventId, 'invoice')" class="flex-1 py-3 bg-[#2C2C2E] hover:bg-[#38383A] active:scale-95 text-white font-bold text-xs rounded-xl flex items-center justify-center gap-1.5 transition">
-          <span>📄</span> Bill & QR
+          <span>📄</span> Client Invoice (ബിൽ)
         </button>
         <button onclick="openExpenseModal(currentViewingEventId)" class="py-3 px-3.5 bg-[#2C2C2E] hover:bg-[#38383A] active:scale-95 text-white font-bold text-xs rounded-xl flex items-center justify-center gap-1 transition">
-          <span>🧾</span> Bills
+          <span>🧾</span> Expenses (ചെലവ്)
         </button>
         <button id="viewEditBtn" class="px-4 py-3 bg-black border border-[#2C2C2E] text-white font-semibold text-xs rounded-xl transition">
           Edit
@@ -724,12 +774,31 @@
 
       <!-- Supplier Content Body -->
       <div class="p-4 overflow-y-auto space-y-3.5 text-xs flex-1">
-        <div class="bg-black p-3 rounded-2xl border border-[#2C2C2E] flex items-center justify-between">
-          <div>
-            <span class="text-[10px] text-[#8E8E93] font-semibold block uppercase">Vendor Phone:</span>
-            <input type="tel" id="supplierVendorPhone" placeholder="+91 98765 00000" class="bg-transparent text-white font-bold text-xs focus:outline-none">
+        
+        <!-- Vendor Selector Bar -->
+        <div class="bg-black p-3 rounded-2xl border border-[#2C2C2E] space-y-2">
+          <div class="flex items-center justify-between">
+            <span class="text-[10px] text-[#8E8E93] font-bold uppercase tracking-wider">Select Vendor:</span>
+            <span id="supplierCategoryBadge" class="text-[10px] px-2 py-0.5 rounded-full bg-[#2C2C2E] text-white font-medium">🥦 Vegetable Store</span>
           </div>
-          <span id="supplierCategoryBadge" class="text-[10px] px-2.5 py-1 rounded-full bg-[#2C2C2E] text-white font-medium">🥦 Vegetable Store</span>
+          <div class="flex gap-2">
+            <select id="savedVendorSelect" onchange="onVendorSelectChange(this.value)" class="flex-1 p-2 bg-[#1C1C1E] border border-[#2C2C2E] rounded-xl text-white text-xs font-semibold focus:border-[#E53935] focus:outline-none">
+              <!-- Dynamically populated based on active store tab -->
+            </select>
+            <input type="tel" id="supplierVendorPhone" placeholder="+91 Phone" class="w-32 p-2 bg-[#1C1C1E] border border-[#2C2C2E] rounded-xl text-white font-mono text-xs focus:border-[#E53935] focus:outline-none">
+          </div>
+        </div>
+
+        <!-- Single-Letter Fast Autocomplete Search -->
+        <div class="relative">
+          <input 
+            type="text" 
+            id="storeSearchInput" 
+            oninput="handleStoreSearch(this.value)" 
+            placeholder="🔍 Type letter (e.g. s, p, chena, biryani) to filter..." 
+            class="w-full bg-black border border-[#2C2C2E] p-2.5 pl-3 rounded-xl text-white text-xs placeholder-[#8E8E93] focus:outline-none focus:border-[#E53935]"
+          >
+          <button id="clearStoreSearchBtn" onclick="clearStoreSearch()" class="hidden absolute right-3 top-2.5 text-[#8E8E93] hover:text-white font-bold text-xs">✕</button>
         </div>
 
         <div class="space-y-1.5">
@@ -741,7 +810,7 @@
           
           <!-- + Add Unknown Custom Item Button -->
           <div class="flex gap-1.5 pt-1">
-            <input type="text" id="newSupplierItemInput" placeholder="+ Add custom item (e.g. Manga Inji, Kooran)" class="flex-1 bg-black border border-[#2C2C2E] text-xs p-2.5 rounded-xl text-white focus:outline-none focus:border-[#E53935]">
+            <input type="text" id="newSupplierItemInput" placeholder="+ Add custom item to this store list..." class="flex-1 bg-black border border-[#2C2C2E] text-xs p-2.5 rounded-xl text-white focus:outline-none focus:border-[#E53935]">
             <button onclick="addSupplierItemFromInput()" class="bg-[#2C2C2E] hover:bg-[#38383A] text-white text-xs px-4 rounded-xl font-bold">Add</button>
           </div>
         </div>

@@ -91,6 +91,18 @@
       opacity: 0 !important;
       pointer-events: none !important;
     }
+
+    /* Banquet Invoice Print / Save-as-PDF Layout */
+    @media print {
+      html, body, body.bg-black { background: #FFFFFF !important; color: #000000 !important; }
+      .nav-bar, header, .app-tab-btn, button:not(.no-print), .sup-tab-btn, #mandiCategoryChips, .filter-btn, [class*="modal"]:not(#billInvoiceModal) { display: none !important; }
+      #billInvoiceModal { position: static !important; background: transparent !important; display: block !important; padding: 0 !important; width: 100% !important; max-width: 100% !important; }
+      #billInvoiceModal > div { background: #FFFFFF !important; border: 0 !important; box-shadow: none !important; max-height: none !important; max-width: 100% !important; overflow: visible !important; }
+      #billInvoiceModal > div > div:not(#printableInvoiceArea) { display: none !important; }
+      #printableInvoiceArea { background: #FFFFFF !important; color: #000000 !important; border: 1px solid #000000 !important; padding: 20px !important; width: 100% !important; overflow: visible !important; max-height: none !important; }
+      #printableInvoiceArea * { color: #000000 !important; border-color: #CCCCCC !important; background: transparent !important; }
+      #printableInvoiceArea img { filter: none !important; }
+    }
   </style>
 </head>
 <body class="bg-black text-[#F5F5F7] min-h-screen flex flex-col font-sans antialiased selection:bg-[#E53935] selection:text-white">
@@ -801,6 +813,53 @@
           <button id="clearStoreSearchBtn" onclick="clearStoreSearch()" class="hidden absolute right-3 top-2.5 text-[#8E8E93] hover:text-white font-bold text-xs">✕</button>
         </div>
 
+        <!-- Wholesale Mandi Rate & Weight Calculator -->
+        <div>
+          <button type="button" onclick="toggleMandiCalculator()" class="w-full py-2 px-3 bg-[#1C1C1E] border border-[#2C2C2E] rounded-xl text-xs font-bold text-amber-300 flex items-center justify-between">
+            <span>⚖️ Mandi Rate & Weight Calculator (മാർക്കറ്റ് കാൽക്കുലേറ്റർ)</span>
+            <span id="mandiCalcArrow">▼</span>
+          </button>
+          <div id="mandiCalcBox" class="hidden p-3 bg-black rounded-2xl border border-[#2C2C2E] space-y-2.5 mt-1.5">
+            <div class="grid grid-cols-2 gap-2">
+              <div class="space-y-1">
+                <label class="text-[10px] text-[#8E8E93] font-bold uppercase tracking-wider">Quantity</label>
+                <input type="number" id="mandiUnitQty" oninput="calculateMandiRate()" placeholder="e.g. 5" class="w-full p-2 bg-[#1C1C1E] border border-[#2C2C2E] rounded-xl text-white text-xs focus:border-[#E53935] focus:outline-none">
+              </div>
+              <div class="space-y-1">
+                <label class="text-[10px] text-[#8E8E93] font-bold uppercase tracking-wider">Unit Price (₹)</label>
+                <input type="number" id="mandiUnitPrice" oninput="calculateMandiRate()" placeholder="Rate per Sack / Unit (₹)" class="w-full p-2 bg-[#1C1C1E] border border-[#2C2C2E] rounded-xl text-white text-xs focus:border-[#E53935] focus:outline-none">
+              </div>
+            </div>
+            <div class="space-y-1">
+              <label class="text-[10px] text-[#8E8E93] font-bold uppercase tracking-wider">Unit Type</label>
+              <select id="mandiUnitType" onchange="calculateMandiRate()" class="w-full p-2 bg-[#1C1C1E] border border-[#2C2C2E] rounded-xl text-white text-xs focus:border-[#E53935] focus:outline-none">
+                <option value="50">50 kg Sack (50 കിലോ ചാക്ക് - Rice/Sugar/Matta)</option>
+                <option value="25">25 kg Bag (25 കിലോ ബാഗ് - Maida/Atta)</option>
+                <option value="100">100 kg Quintal (ക്വിന്റൽ)</option>
+                <option value="15">15 kg Banana Bunch (വാഴക്കുല ~15kg)</option>
+                <option value="20">20 kg Box/Crate (പെട്ടി/ക്രേറ്റ് - Tomato/Apples)</option>
+                <option value="custom">Custom kg per unit</option>
+              </select>
+              <input type="number" id="mandiCustomKg" oninput="calculateMandiRate()" placeholder="Custom Kg per Unit" class="hidden w-full p-2 bg-[#1C1C1E] border border-[#2C2C2E] rounded-xl text-white text-xs focus:border-[#E53935] focus:outline-none">
+            </div>
+            <div class="grid grid-cols-3 gap-2 bg-[#1C1C1E] border border-[#2C2C2E] rounded-xl p-2.5 text-center">
+              <div>
+                <span class="text-[9px] text-[#8E8E93] font-bold uppercase block">Weight</span>
+                <span id="mandiTotalWeight" class="font-bold text-white">0 Kg</span>
+              </div>
+              <div>
+                <span class="text-[9px] text-[#8E8E93] font-bold uppercase block">Per Kg</span>
+                <span id="mandiRatePerKg" class="font-bold text-amber-300">₹0.00 / Kg</span>
+              </div>
+              <div>
+                <span class="text-[9px] text-[#8E8E93] font-bold uppercase block">Total</span>
+                <span id="mandiTotalCost" class="font-bold text-emerald-400">₹0</span>
+              </div>
+            </div>
+            <button type="button" onclick="addMandiCalcToExpenses()" class="w-full py-2 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs rounded-xl transition">+ Log as Purchase Expense</button>
+          </div>
+        </div>
+
         <div class="space-y-1.5">
           <label class="text-[11px] font-semibold text-white flex items-center justify-between">
             <span>Items with Quantities</span>
@@ -860,8 +919,8 @@
       </div>
 
       <div class="p-4 border-t border-[#2C2C2E] bg-black grid grid-cols-2 gap-2">
-        <button onclick="window.print()" class="py-3 bg-[#2C2C2E] hover:bg-[#38383A] text-white font-bold text-xs rounded-xl flex items-center justify-center gap-1.5 transition">
-          <span>🖨️</span> Print / PDF
+        <button onclick="printBanquetInvoice()" class="py-2.5 px-4 bg-[#2C2C2E] hover:bg-[#38383A] text-white font-bold text-xs rounded-xl flex items-center justify-center gap-1.5 transition">
+          <span>🖨️</span> Print / Save PDF
         </button>
         <button onclick="shareInvoiceWhatsApp()" class="py-3 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs rounded-xl flex items-center justify-center gap-1.5 shadow-md transition">
           <span>💬</span> Send WhatsApp

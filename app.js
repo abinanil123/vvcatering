@@ -882,6 +882,90 @@ function closeSupplierModal() {
   document.getElementById('supplierOrderModal')?.classList.add('hidden');
 }
 
+// ==========================================
+// 6b. WHOLESALE MANDI RATE & WEIGHT CALCULATOR
+// ==========================================
+
+function toggleMandiCalculator() {
+  const box = document.getElementById('mandiCalcBox');
+  const arrow = document.getElementById('mandiCalcArrow');
+  if (!box) return;
+  const isHidden = box.classList.contains('hidden');
+  if (isHidden) {
+    box.classList.remove('hidden');
+    if (arrow) arrow.innerText = '▲';
+  } else {
+    box.classList.add('hidden');
+    if (arrow) arrow.innerText = '▼';
+  }
+}
+
+function calculateMandiRate() {
+  const qty = parseFloat(document.getElementById('mandiUnitQty')?.value) || 0;
+  const unitType = document.getElementById('mandiUnitType')?.value;
+  const customKgInput = document.getElementById('mandiCustomKg');
+  let kgPerUnit = parseFloat(unitType) || 0;
+
+  if (unitType === 'custom') {
+    customKgInput?.classList.remove('hidden');
+    kgPerUnit = parseFloat(customKgInput?.value) || 0;
+  } else {
+    customKgInput?.classList.add('hidden');
+  }
+
+  const unitPrice = parseFloat(document.getElementById('mandiUnitPrice')?.value) || 0;
+  const totalKg = qty * kgPerUnit;
+  const totalCost = qty * unitPrice;
+  const ratePerKg = totalKg > 0 ? (totalCost / totalKg) : 0;
+
+  const wtEl = document.getElementById('mandiTotalWeight');
+  const rateEl = document.getElementById('mandiRatePerKg');
+  const costEl = document.getElementById('mandiTotalCost');
+
+  if (wtEl) wtEl.innerText = totalKg + ' Kg';
+  if (rateEl) rateEl.innerText = '₹' + ratePerKg.toFixed(2) + ' / Kg';
+  if (costEl) costEl.innerText = '₹' + Math.round(totalCost).toLocaleString();
+}
+
+function addMandiCalcToExpenses() {
+  const qty = parseFloat(document.getElementById('mandiUnitQty')?.value) || 0;
+  const unitPrice = parseFloat(document.getElementById('mandiUnitPrice')?.value) || 0;
+  const totalCost = qty * unitPrice;
+  const rateEl = document.getElementById('mandiRatePerKg')?.innerText || '';
+  const wtEl = document.getElementById('mandiTotalWeight')?.innerText || '';
+
+  if (totalCost <= 0) {
+    alert('Please enter valid Mandi quantity and price.');
+    return;
+  }
+
+  const exp = {
+    id: 'exp_' + Date.now(),
+    category: currentSupplierTab === 'veggies' ? 'Produce' : currentSupplierTab === 'grocery' ? 'Grocery' : 'Wholesale Market',
+    amount: Math.round(totalCost),
+    vendor: document.getElementById('supplierVendorPhone')?.value || 'Wholesale Mandi',
+    date: new Date().toISOString().split('T')[0],
+    notes: 'Mandi: ' + qty + ' units (' + wtEl + ') @ ' + rateEl
+  };
+
+  // Merge into this event's saved list (do not clobber another event's expenses)
+  let targetExpenses = [];
+  try {
+    const raw = localStorage.getItem('vv_expenses_' + currentSupplierEventId);
+    targetExpenses = raw ? JSON.parse(raw) : [];
+  } catch (e) { targetExpenses = []; }
+  if (!Array.isArray(targetExpenses)) targetExpenses = [];
+
+  targetExpenses.unshift(exp);
+  localStorage.setItem('vv_expenses_' + currentSupplierEventId, JSON.stringify(targetExpenses));
+
+  if (currentViewingEventId === currentSupplierEventId) {
+    currentEventExpenses = targetExpenses;
+  }
+
+  alert('Logged ₹' + Math.round(totalCost).toLocaleString() + ' to event purchase expenses!');
+}
+
 function setSupplierTab(tab) {
   currentSupplierTab = tab;
   document.querySelectorAll('.sup-tab-btn').forEach(btn => {
@@ -1220,6 +1304,10 @@ function openBillModal(eventId, type) {
 
 function closeBillModal() {
   document.getElementById('billInvoiceModal')?.classList.add('hidden');
+}
+
+function printBanquetInvoice() {
+  window.print();
 }
 
 function shareInvoiceWhatsApp() {

@@ -732,6 +732,9 @@
         <button onclick="openBillModal(currentViewingEventId, 'invoice')" class="flex-1 py-3 bg-[#2C2C2E] hover:bg-[#38383A] active:scale-95 text-white font-bold text-xs rounded-xl flex items-center justify-center gap-1.5 transition">
           <span>📄</span> Client Invoice (ബിൽ)
         </button>
+        <button onclick="shareKitchenChitWhatsApp(currentViewingEventId)" class="py-3 px-3 bg-[#2C2C2E] hover:bg-[#38383A] active:scale-95 text-white font-bold text-xs rounded-xl flex items-center justify-center gap-1 transition">
+          <span>👨‍🍳</span> Kitchen Chit (അടുക്കള ലിസ്റ്റ്)
+        </button>
         <button onclick="openExpenseModal(currentViewingEventId)" class="py-3 px-3.5 bg-[#2C2C2E] hover:bg-[#38383A] active:scale-95 text-white font-bold text-xs rounded-xl flex items-center justify-center gap-1 transition">
           <span>🧾</span> Expenses (ചെലവ്)
         </button>
@@ -856,7 +859,10 @@
                 <span id="mandiTotalCost" class="font-bold text-emerald-400">₹0</span>
               </div>
             </div>
-            <button type="button" onclick="addMandiCalcToExpenses()" class="w-full py-2 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs rounded-xl transition">+ Log as Purchase Expense</button>
+            <div class="grid grid-cols-2 gap-2">
+              <button type="button" onclick="addMandiCalcToExpenses()" class="py-2 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs rounded-xl transition">🧾 Log Expense</button>
+              <button type="button" onclick="addMandiCalcToChit()" class="py-2 bg-[#2C2C2E] hover:bg-[#38383A] text-white font-bold text-xs rounded-xl transition">🛒 Add to Chit</button>
+            </div>
           </div>
         </div>
 

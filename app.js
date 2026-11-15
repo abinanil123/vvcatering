@@ -966,6 +966,57 @@ function addMandiCalcToExpenses() {
   alert('Logged ₹' + Math.round(totalCost).toLocaleString() + ' to event purchase expenses!');
 }
 
+function addMandiCalcToChit() {
+  const qty = parseFloat(document.getElementById('mandiUnitQty')?.value) || 0;
+  const unitType = document.getElementById('mandiUnitType')?.value;
+  const customKgInput = document.getElementById('mandiCustomKg');
+  let kgPerUnit = parseFloat(unitType) || 0;
+
+  if (unitType === 'custom') {
+    kgPerUnit = parseFloat(customKgInput?.value) || 0;
+  }
+
+  const totalKg = qty * kgPerUnit;
+  if (totalKg <= 0) {
+    alert('Please enter valid Mandi quantity and unit type first.');
+    return;
+  }
+
+  const unitLabels = {
+    '50': '50kg Sack (ചാക്ക്)',
+    '25': '25kg Bag (ബാഗ്)',
+    '100': 'Quintal (ക്വിന്റൽ)',
+    '15': 'Banana Bunch (കുല)',
+    '20': 'Crate/Box (പെട്ടി)',
+    'custom': 'Wholesale Bulk'
+  };
+  const label = unitLabels[unitType] || 'Mandi Bulk';
+  const itemName = `Mandi: ${qty} × ${label} (${totalKg} Kg)`;
+
+  if (!workingStoreLists[currentSupplierTab]) {
+    workingStoreLists[currentSupplierTab] = [];
+  }
+
+  const existing = workingStoreLists[currentSupplierTab].find(i => i.name === itemName);
+  if (existing) {
+    existing.defaultQty = (parseFloat(existing.defaultQty) || 0) + totalKg;
+  } else {
+    const newItem = {
+      id: 'mandi_' + Date.now(),
+      name: itemName,
+      unit: 'Kg',
+      defaultQty: totalKg,
+      custom: true
+    };
+    workingStoreLists[currentSupplierTab].unshift(newItem);
+    saveCustomStoreItem(currentSupplierTab, newItem);
+  }
+
+  renderStoreItemsList();
+  updateChitPreview();
+  alert(`Added ${totalKg} Kg (${qty} units) directly to ${currentSupplierTab.toUpperCase()} Market Chit!`);
+}
+
 function setSupplierTab(tab) {
   currentSupplierTab = tab;
   document.querySelectorAll('.sup-tab-btn').forEach(btn => {
@@ -1324,7 +1375,23 @@ function shareInvoiceWhatsApp() {
   text += `*STATEMENT OF ACCOUNT / INVOICE*\n`;
   text += `*Event:* ${ev.title}\n`;
   text += `*Date:* ${formatDisplayDate(ev.date)}\n`;
-  text += `*Guests / Plates:* ${ev.guests} Plates\n`;
+  text += `*Guests / Plates:* ${ev.guests || 0} Plates${ev.ratePerPlate ? ` (@ ₹${ev.ratePerPlate}/Plate)` : ''}\n`;
+  if (ev.venue) text += `*Venue:* ${ev.venue}\n`;
+  text += `------------------------------------\n`;
+  text += `*SELECTED BANQUET MENU:*\n`;
+
+  const dishCats = Object.entries(ev.dishes || {});
+  let hasDishes = false;
+  dishCats.forEach(([cat, list]) => {
+    if (list && list.length > 0) {
+      hasDishes = true;
+      text += `*• ${cat.toUpperCase()}:* ${list.join(' • ')}\n`;
+    }
+  });
+  if (!hasDishes) {
+    text += `Standard Traditional Sadya (ഇലയിൽ സദ്യ)\n`;
+  }
+
   text += `------------------------------------\n`;
   text += `*Total Charge:* ₹${total.toLocaleString()}\n`;
   text += `*Advance Received:* ₹${advance.toLocaleString()}\n`;
@@ -1335,6 +1402,56 @@ function shareInvoiceWhatsApp() {
 
   const phone = sanitizePhoneNumber(ev.phone);
   const url = phone ? `https://wa.me/${phone}?text=${encodeURIComponent(text)}` : `https://wa.me/?text=${encodeURIComponent(text)}`;
+  window.open(url, '_blank');
+}
+
+function shareKitchenChitWhatsApp(eventId) {
+  const targetId = eventId || currentViewingEventId;
+  const ev = events.find(e => e.id === targetId);
+  if (!ev) return;
+
+  let text = `*👨‍🍳 V.V EVENTS & CATERING SERVICE*\n`;
+  text += `*KITCHEN BATCH SHEET (അടുക്കള ലിസ്റ്റ്)*\n`;
+  text += `📍 Mamkoottam Central Kitchen\n`;
+  text += `------------------------------------\n`;
+  text += `*EVENT:* ${ev.title}\n`;
+  text += `*DATE:* ${formatDisplayDate(ev.date)}\n`;
+  if (ev.time) text += `*MEAL TIME:* ${ev.time}\n`;
+  text += `*HEADCOUNT / PLATES:* ${ev.guests || 0} Plates\n`;
+  text += `*SERVICE STYLE:* ${ev.serviceStyle || 'Buffet / Banquet'}\n`;
+  if (ev.venue) text += `*DELIVERY VENUE:* ${ev.venue}\n`;
+  text += `------------------------------------\n`;
+  text += `*MENU ITEMS TO PREPARE:*\n`;
+
+  const dishCats = Object.entries(ev.dishes || {});
+  let hasDishes = false;
+  dishCats.forEach(([cat, list]) => {
+    if (list && list.length > 0) {
+      hasDishes = true;
+      text += `\n*• ${cat.toUpperCase()}:*\n`;
+      list.forEach((dish, idx) => {
+        text += `  ${idx + 1}. ${dish}\n`;
+      });
+    }
+  });
+
+  if (!hasDishes) {
+    text += `Standard Traditional Sadya (സദ്യ വിഭവങ്ങൾ)\n`;
+  }
+
+  if (ev.crockery && Object.values(ev.crockery).some(v => v > 0)) {
+    text += `\n------------------------------------\n`;
+    text += `*CROCKERY & PLATES NEEDED:*\n`;
+    if (ev.crockery.melamine) text += `• Melamine Plates: ${ev.crockery.melamine}\n`;
+    if (ev.crockery.ceramic) text += `• Ceramic Plates: ${ev.crockery.ceramic}\n`;
+    if (ev.crockery.disposable) text += `• Disposable Plates: ${ev.crockery.disposable}\n`;
+    if (ev.crockery.spoons) text += `• Spoons/Glasses: ${ev.crockery.spoons}\n`;
+  }
+
+  text += `------------------------------------\n`;
+  text += `*Please ensure food packing and van dispatch timing!* 🙏`;
+
+  const url = `https://wa.me/?text=${encodeURIComponent(text)}`;
   window.open(url, '_blank');
 }
 
